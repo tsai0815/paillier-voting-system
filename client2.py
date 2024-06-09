@@ -1,5 +1,6 @@
 import random
 import math
+import sympy
 
 #-----------------RSA-----------------
 def gcd(a, b):
@@ -28,12 +29,12 @@ def egcd(a, b):
 
 
 def generate_keypair():
-    p = 61  # 选择两个素数 p 和 q
-    q = 89
+    p = sympy.randprime(100, 1000)  # 选择两个素数 p 和 q
+    q = sympy.randprime(100, 1000)
     n = p * q
     phi = (p - 1) * (q - 1)
 
-    e = int(1e9 + 7)  # 选择一个公开的 e
+    e = sympy.randprime(1000, 100000)  # 选择一个公开的 e
     d = modinv(e, phi)  # 计算 d，使得 ed ≡ 1 (mod phi)
 
     return (e, n), (d, n)
@@ -50,8 +51,6 @@ def decrypt(private_key, ciphertext):
     plaintext = pow(ciphertext, d, n)
     return plaintext
 #-----------------RSA-----------------
-digital_signature_public_key, digital_signature_private_key = generate_keypair()
-print(f"id = {digital_signature_private_key[0]}, {digital_signature_private_key[1]}")
 # e, n = map(int,input().split())
 # public_key = (e, n)
 public_key = (65537, 3233)
@@ -70,16 +69,20 @@ def blinding(public_key, m):
     blind_m = m * pow(blinding_factor, public_key[0]) % public_key[1]
     return (blinding_factor, blind_m)
 
-def unbinding(signature, blinding_factor, public_key):
+def unblinding(signature, blinding_factor, public_key):
     return signature * pow(blinding_factor, -1, public_key[1]) % public_key[1]
-m = 42 #input
 
+digital_signature_public_key, digital_signature_private_key = generate_keypair()
+print(f"name = {digital_signature_private_key[0]}, id = {digital_signature_private_key[1]}")
+
+
+m = int(input("who to vote: ")) #
 blinding_factor, encm = blinding(public_key, m)
-encm = encrypt(digital_signature_public_key, encm)
-print(f"encm = {encm}")
+checkencm = encrypt(digital_signature_public_key, encm)
+print(f"encm = {encm}, checkencm = {checkencm}")
 signature = int(input("signature = "))
-unbinding = unbinding(signature, blinding_factor, public_key)
-# print(encm)
+unblinding = unblinding(signature, blinding_factor, public_key)
+print(pow(unblinding, e, n))
 # encm = decrypt(digital_signature_private_key, encm)
 # print(encm)
-print(pow(unbinding, e, n))
+print(f"VotingResult:{m} signature_unblind: {unblinding}")

@@ -50,8 +50,6 @@ def decrypt(private_key, ciphertext):
     plaintext = pow(ciphertext, d, n)
     return plaintext
 #-----------------RSA-----------------
-digital_signature_public_key, digital_signature_private_key = generate_keypair()
-print(f"id = {digital_signature_private_key[0]}, {digital_signature_private_key[1]}")
 # e, n = map(int,input().split())
 # public_key = (e, n)
 public_key = (65537, 3233)
@@ -70,16 +68,20 @@ def blinding(public_key, m):
     blind_m = m * pow(blinding_factor, public_key[0]) % public_key[1]
     return (blinding_factor, blind_m)
 
-def unbinding(signature, blinding_factor, public_key):
+def unblinding(signature, blinding_factor, public_key):
     return signature * pow(blinding_factor, -1, public_key[1]) % public_key[1]
-m = 42 #input
 
+digital_signature_public_key, digital_signature_private_key = generate_keypair()
+print(f"name = {digital_signature_private_key[0]}, id = {digital_signature_private_key[1]}")
+
+
+m = int(input("who to vote: ")) #
 blinding_factor, encm = blinding(public_key, m)
-encm = encrypt(digital_signature_public_key, encm)
-print(f"encm = {encm}")
+checkencm = encrypt(digital_signature_public_key, encm)
+print(f"encm = {encm}, checkencm = {checkencm}")
 signature = int(input("signature = "))
-unbinding = unbinding(signature, blinding_factor, public_key)
-print(pow(unbinding, e, n))
+unblinding = unblinding(signature, blinding_factor, public_key)
+print(pow(unblinding, e, n))
 # encm = decrypt(digital_signature_private_key, encm)
 # print(encm)
-print(f"VotingResult:{m} signature_unbind: {unbinding}")
+print(f"VotingResult:{m} signature_unblind: {unblinding}")

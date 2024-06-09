@@ -64,7 +64,7 @@ def signfunc(private_key, blind_m):
 
 # 生成密钥对
 public_key, private_key = generate_keypair()
-print(f"Public e = {public_key[0]}, n = {public_key[1]}")
+print(f"Public key e = {public_key[0]}, n = {public_key[1]}")
 
 
 
@@ -76,20 +76,38 @@ def cast():
         print("Invalid option")
         return cast()
     return option
-def Verify(VotingResult, signature_unbind, public_key):
+def Verify(VotingResult, signature_unblind, public_key):
     e, n = public_key
-    return VotingResult == pow(signature_unbind, e, n)
+    return VotingResult == pow(signature_unblind, e, n)
+def VerifyVoter(name, id, encm, checkencm):
+    return encm == decrypt((name, id), checkencm)
+
+
+Result = {}
+Voted = set()
 
 while(cast() != 2):
-    id = list(map(int,input("id = ").split()))
-    encm = int(input("encm = "))
-    encm = decrypt(id, encm)
+    name , id = map(int,input("name, id = ").split())
+    encm , ckeckencm = map(int,input("encm ,checkencm = ").split())
+    if VerifyVoter(name, id, encm, ckeckencm) == False and id in Voted:
+        print("identity verification failed")
+        continue
+    else:
+        print("identity verification success")
+        Voted.add(name)
     # print(encm)
     signature = signfunc(private_key, encm)
     print(f"signature = {signature}")
-    VotingResult, signature_unbind = map(int,input("VotingResult, signature_unbind = ").split())
-    if Verify(VotingResult, signature_unbind, public_key):
+    VotingResult, signature_unblind = map(int,input("VotingResult, signature_unblind = ").split())
+    if Verify(VotingResult, signature_unblind, public_key):
         print("Voting success")
+        if VotingResult not in Result:
+            Result[VotingResult] = 1
+        else:
+            Result[VotingResult] += 1
     else:
         print("Voting fail")
     print()
+
+for key, value in Result.items():
+    print(f"VotingResult:{key} count: {value}")
